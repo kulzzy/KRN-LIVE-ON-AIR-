@@ -22,5 +22,18 @@ services:
     ports:
       - "8005:8005"
 
+  kulzzy-broadcast-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile.broadcast
+    container_name: kulzzy-broadcast-engine
+    restart: unless-stopped
+    depends_on:
+      - kulzzy-radio-server
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+
 volumes:
   icecast-logs:
