@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07152f">
 <title>Kulzzy Radio Broadcast Studio</title>
 
@@ -13,28 +13,19 @@ body{
     background:#07152f;
     color:white;
     font-family:Arial,sans-serif;
-    min-height:100vh;
 }
 
 header{
-    padding:22px 15px;
     text-align:center;
+    padding:24px 15px;
     border-bottom:1px solid #263653;
 }
 
-header h1{
-    color:#ffd700;
-    font-size:23px;
-}
-
-header p{
-    font-size:11px;
-    margin-top:6px;
-    letter-spacing:2px;
-}
+header h1{color:#ffd700;font-size:24px}
+header p{font-size:11px;letter-spacing:2px;margin-top:7px}
 
 .container{
-    max-width:600px;
+    max-width:550px;
     margin:25px auto;
     padding:15px;
 }
@@ -42,101 +33,71 @@ header p{
 .card{
     background:#101f3c;
     border:1px solid #263653;
-    border-radius:16px;
+    border-radius:17px;
     padding:22px;
     margin-bottom:18px;
 }
 
-.card h2{
+h2{
     color:#ffd700;
     font-size:17px;
-    margin-bottom:18px;
-}
-
-.status{
-    display:flex;
-    align-items:center;
-    gap:9px;
-    font-size:13px;
     margin-bottom:20px;
-}
-
-.dot{
-    width:10px;
-    height:10px;
-    background:#999;
-    border-radius:50%;
-}
-
-button{
-    width:100%;
-    border:0;
-    border-radius:11px;
-    padding:16px;
-    font-weight:bold;
-    font-size:15px;
-    cursor:pointer;
-    margin-top:10px;
-}
-
-.gold{
-    background:#ffd700;
-    color:#07152f;
-}
-
-.dark{
-    background:#263653;
-    color:white;
-}
-
-.red{
-    background:#b91c1c;
-    color:white;
-}
-
-button:disabled{
-    opacity:.45;
-    cursor:not-allowed;
-}
-
-input{
-    width:100%;
-    accent-color:#ffd700;
 }
 
 label{
     display:block;
-    font-size:13px;
-    margin:18px 0 10px;
-}
-
-.meter{
-    height:12px;
-    background:#263653;
-    border-radius:20px;
-    overflow:hidden;
-    margin-top:15px;
-}
-
-.meter-fill{
-    height:100%;
-    width:0;
-    background:#ffd700;
-    transition:width .1s;
-}
-
-.info{
-    color:#aebbd0;
     font-size:12px;
-    line-height:1.7;
-    margin-top:14px;
+    margin:17px 0 8px;
+}
+
+input{
+    width:100%;
+    padding:14px;
+    border:1px solid #344767;
+    border-radius:9px;
+    background:#07152f;
+    color:white;
+    font-size:14px;
+}
+
+button{
+    width:100%;
+    padding:17px;
+    border:0;
+    border-radius:11px;
+    margin-top:13px;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:disabled{opacity:.4}
+
+.gold{background:#ffd700;color:#07152f}
+.red{background:#c62828;color:white}
+.dark{background:#263653;color:white}
+
+.status{
+    padding:13px;
+    background:#07152f;
+    border-radius:9px;
+    font-size:13px;
+    color:#ffd700;
+    margin-bottom:15px;
 }
 
 #message{
-    color:#ffd700;
+    color:#b9c5d9;
     font-size:13px;
     line-height:1.6;
     margin-top:15px;
+}
+
+.live-indicator{
+    display:none;
+    color:#ff5252;
+    font-weight:bold;
+    margin-bottom:15px;
 }
 
 footer{
@@ -158,58 +119,53 @@ footer{
 <main class="container">
 
     <div class="card">
-        <h2>STUDIO STATUS</h2>
 
-        <div class="status">
-            <span class="dot" id="statusDot"></span>
-            <span id="statusText">BROADCAST SERVER NOT CONNECTED</span>
+        <h2>STUDIO CONNECTION</h2>
+
+        <div class="status" id="status">
+            DISCONNECTED
         </div>
 
-        <button class="gold" id="micButton">
-            TEST MICROPHONE
-        </button>
+        <label>STREAMING SERVER ADDRESS</label>
+        <input
+            id="serverAddress"
+            type="url"
+            placeholder="wss://your-server-address/broadcast"
+        >
 
-        <button class="red" id="stopButton" disabled>
-            STOP MICROPHONE
-        </button>
+        <label>BROADCAST PASSWORD</label>
+        <input
+            id="broadcastPassword"
+            type="password"
+            placeholder="Enter broadcast password"
+        >
 
-        <div class="meter">
-            <div class="meter-fill" id="meterFill"></div>
-        </div>
+        <button class="gold" id="connectButton">
+            CONNECT TO STUDIO
+        </button>
 
         <div id="message">
-            Microphone testing is available. Live transmission will be enabled when the streaming engine is connected.
+            Enter your streaming server address and broadcast password.
         </div>
+
     </div>
 
     <div class="card">
-        <h2>AUDIO SETTINGS</h2>
 
-        <label for="micVolume">MICROPHONE LEVEL</label>
-        <input type="range" id="micVolume" min="0" max="100" value="100">
-
-        <label for="monitorVolume">MONITOR LEVEL</label>
-        <input type="range" id="monitorVolume" min="0" max="100" value="70">
-
-        <p class="info">
-            Adjust your microphone input and monitoring levels.
-        </p>
-    </div>
-
-    <div class="card">
         <h2>LIVE BROADCAST</h2>
 
-        <button class="gold" disabled>
+        <div class="live-indicator" id="liveIndicator">
+            ● LIVE ON AIR
+        </div>
+
+        <button class="gold" id="startButton" disabled>
             START LIVE BROADCAST
         </button>
 
-        <button class="dark" disabled>
-            END BROADCAST
+        <button class="red" id="stopButton" disabled>
+            STOP BROADCAST
         </button>
 
-        <p class="info">
-            Broadcasting controls will activate after the streaming server is connected.
-        </p>
     </div>
 
 </main>
@@ -219,121 +175,124 @@ footer{
 </footer>
 
 <script>
-let microphone = null;
-let audioContext = null;
-let analyser = null;
-let animationFrame = null;
-let source = null;
-
-const micButton = document.getElementById("micButton");
+const serverInput = document.getElementById("serverAddress");
+const passwordInput = document.getElementById("broadcastPassword");
+const connectButton = document.getElementById("connectButton");
+const startButton = document.getElementById("startButton");
 const stopButton = document.getElementById("stopButton");
+const statusBox = document.getElementById("status");
 const message = document.getElementById("message");
-const meterFill = document.getElementById("meterFill");
-const statusText = document.getElementById("statusText");
-const statusDot = document.getElementById("statusDot");
-const micVolume = document.getElementById("micVolume");
+const liveIndicator = document.getElementById("liveIndicator");
 
-async function startMicrophone(){
+let socket = null;
+let microphone = null;
+let recorder = null;
+let connected = false;
+let recording = false;
+let manuallyStopping = false;
+
+function showMessage(text){
+    message.textContent = text;
+}
+
+function setStatus(text){
+    statusBox.textContent = text;
+}
+
+function connectStudio(){
+
+    const address = serverInput.value.trim();
+    const password = passwordInput.value;
+
+    if(!address || !password){
+        showMessage("Enter the server address and password.");
+        return;
+    }
+
+    if(!address.startsWith("wss://")){
+        showMessage("A secure WSS address is required.");
+        return;
+    }
 
     try{
 
-        microphone = await navigator.mediaDevices.getUserMedia({
-            audio:{
-                echoCancellation:true,
-                noiseSuppression:true,
-                autoGainControl:true
-            }
-        });
+        socket = new WebSocket(address);
 
-        audioContext = new (
-            window.AudioContext ||
-            window.webkitAudioContext
-        )();
+        socket.onopen = function(){
 
-        source = audioContext.createMediaStreamSource(microphone);
+            socket.send(JSON.stringify({
+                type:"authenticate",
+                password:password
+            }));
 
-        analyser = audioContext.createAnalyser();
-        analyser.fftSize = 256;
+            setStatus("AUTHENTICATING");
+            showMessage("Connecting to Kulzzy broadcast engine...");
 
-        source.connect(analyser);
+        };
 
-        const data = new Uint8Array(analyser.frequencyBinCount);
+        socket.onmessage = function(event){
 
-        function updateMeter(){
+            let data;
 
-            analyser.getByteFrequencyData(data);
-
-            let total = 0;
-
-            for(let value of data){
-                total += value;
+            try{
+                data = JSON.parse(event.data);
+            }catch{
+                return;
             }
 
-            let average = total / data.length;
+            if(data.type === "ready"){
 
-            let level = Math.min(100, average * 1.8);
+                connected = true;
 
-            meterFill.style.width = level + "%";
+                connectButton.disabled = true;
+                startButton.disabled = false;
 
-            animationFrame = requestAnimationFrame(updateMeter);
-        }
+                setStatus("STUDIO CONNECTED");
 
-        updateMeter();
+                showMessage("Broadcast studio is ready.");
 
-        micButton.disabled = true;
-        stopButton.disabled = false;
+            }
 
-        statusText.textContent = "MICROPHONE READY";
-        statusDot.style.background = "#22c55e";
+            if(data.type === "error"){
 
-        message.textContent =
-            "Microphone is working. Your voice is being monitored locally; you are not transmitting live.";
+                showMessage(data.message);
+                setStatus("CONNECTION ERROR");
+
+            }
+
+            if(data.type === "stopped"){
+
+                resetStudio();
+                showMessage(data.message);
+
+            }
+
+        };
+
+        socket.onerror = function(){
+
+            setStatus("CONNECTION ERROR");
+            showMessage("Unable to connect to broadcast server.");
+
+        };
+
+        socket.onclose = function(){
+
+            resetStudio();
+
+            if(!manuallyStopping){
+                showMessage("Studio connection closed.");
+            }
+
+        };
 
     }catch(error){
 
-        message.textContent =
-            "Microphone access failed. Allow microphone permission and try again.";
+        showMessage("Invalid server address.");
 
     }
 }
 
-function stopMicrophone(){
+async function startBroadcast(){
 
-    if(microphone){
-
-        microphone.getTracks().forEach(track => track.stop());
-        microphone = null;
-    }
-
-    if(animationFrame){
-        cancelAnimationFrame(animationFrame);
-        animationFrame = null;
-    }
-
-    if(audioContext){
-        audioContext.close();
-        audioContext = null;
-    }
-
-    source = null;
-    analyser = null;
-
-    meterFill.style.width = "0%";
-
-    micButton.disabled = false;
-    stopButton.disabled = true;
-
-    statusText.textContent = "MICROPHONE STOPPED";
-    statusDot.style.background = "#999";
-
-    message.textContent = "Microphone testing stopped.";
-}
-
-micButton.addEventListener("click", startMicrophone);
-stopButton.addEventListener("click", stopMicrophone);
-
-window.addEventListener("beforeunload", stopMicrophone);
-</script>
-
-</body>
-</html>
+    if(!connected || !socket || socket.readyState
