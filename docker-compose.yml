@@ -1,0 +1,17 @@
+services:
+  kulzzy-radio-server:
+    build: .
+    container_name: kulzzy-radio
+    restart: unless-stopped
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - icecast-logs:/var/log/icecast2
+
+    environment:
+      TZ: Africa/Lagos
+
+volumes:
+  icecast-logs:
