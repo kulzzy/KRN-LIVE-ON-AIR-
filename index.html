@@ -1,1 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#07152f">
 
+<title>Kulzzy Radio Live On Air</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:#07152f;
+    color:#fff;
+    min-height:100vh;
+}
+
+header{
+    padding:22px 16px;
+    text-align:center;
+    border-bottom:1px solid rgba(255,215,0,.2);
+}
+
+.logo{
+    font-size:27px;
+    font-weight:900;
+    color:#ffd700;
+    letter-spacing:1px;
+}
+
+.logo span{
+    color:#fff;
+}
+
+.tagline{
+    margin-top:7px;
+    font-size:12px;
+    letter-spacing:2px;
+    color:#c7cbd5;
+}
+
+.container{
+    max-width:600px;
+    margin:35px auto;
+    padding:15px;
+}
+
+.player-card{
+    background:#fff;
+    color:#07152f;
+    border-radius:22px;
+    padding:28px 20px;
+    text-align:center;
+    box-shadow:0 15px 40px rgba(0,0,0,.25);
+}
+
+.station-icon{
+    width:105px;
+    height:105px;
+    border-radius:50%;
+    background:#07152f;
+    border:4px solid #ffd700;
+    margin:0 auto 20px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:#ffd700;
+    font-size:27px;
+    font-weight:900;
+}
+
+.station-name{
+    font-size:25px;
+    font-weight:900;
+    margin-bottom:8px;
+}
+
+.station-description{
+    color:#687080;
+    font-size:13px;
+    margin-bottom:22px;
+}
+
+.status{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:#f0f1f4;
+    color:#555;
+    padding:9px 17px;
+    border-radius:30px;
+    font-size:12px;
+    font-weight:bold;
+    margin-bottom:25px;
+}
+
+.dot{
+    width:9px;
+    height:9px;
+    background:#999;
+    border-radius:50%;
+}
+
+.status.connected{
+    background:#e6f8ed;
+    color:#168343;
+}
+
+.status.connected .dot{
+    background:#16a34a;
+}
+
+.listen-button{
+    width:100%;
+    border:none;
+    background:#ffd700;
+    color:#07152f;
+    padding:19px;
+    border-radius:14px;
+    font-size:17px;
+    font-weight:900;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.listen-button:active{
+    transform:scale(.97);
+}
+
+.listen-button:disabled{
+    background:#d6d8dc;
+    color:#777;
+    cursor:not-allowed;
+}
+
+.player-message{
+    font-size:12px;
+    color:#777;
+    margin-top:15px;
+    line-height:1.6;
+}
+
+.volume-area{
+    margin-top:24px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.volume-area span{
+    font-size:13px;
+    font-weight:bold;
+}
+
+.volume-area input{
+    flex:1;
+    accent-color:#07152f;
+}
+
+.section{
+    margin-top:25px;
+    background:rgba(255,255,255,.07);
+    padding:22px;
+    border-radius:16px;
+    border:1px solid rgba(255,215,0,.18);
+}
+
+.section h3{
+    color:#ffd700;
+    font-size:16px;
+    margin-bottom:12px;
+}
+
+.section p{
+    color:#cbd1df;
+    font-size:13px;
+    line-height:1.8;
+}
+
+footer{
+    text-align:center;
+    padding:30px 15px;
+    color:#aab2c3;
+    font-size:12px;
+    line-height:2;
+}
+
+footer strong{
+    color:#ffd700;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">KULZZY <span>RADIO</span></div>
+    <div class="tagline">LIVE ON AIR</div>
+</header>
+
+<main class="container">
+
+    <div class="player-card">
+
+        <div class="station-icon">KR</div>
+
+        <div class="station-name">KULZZY RADIO</div>
+
+        <div class="station-description">
+            CELEBRATING LIVES EVERYDAY
+        </div>
+
+        <div class="status" id="connectionStatus">
+            <span class="dot"></span>
+            STREAM NOT CONNECTED
+        </div>
+
+        <button class="listen-button" id="listenButton" disabled>
+            LISTEN NOW
+        </button>
+
+        <div class="player-message" id="playerMessage">
+            The streaming engine has not yet been connected.
+            Please check back when the station is ready.
+        </div>
+
+        <div class="volume-area">
+            <span>VOLUME</span>
+            <input
+                type="range"
+                id="volumeControl"
+                min="0"
+                max="100"
+                value="85"
+            >
+        </div>
+
+        <audio id="radioAudio" preload="none"></audio>
+
+    </div>
+
+    <div class="section">
+        <h3>ABOUT KULZZY RADIO</h3>
+        <p>
+            Welcome to Kulzzy Radio, your celebration community.
+            We celebrate lives, share beautiful moments and bring
+            people together through the power of radio.
+        </p>
+    </div>
+
+    <div class="section">
+        <h3>OUR PROMISE</h3>
+        <p>
+            A dedicated listening experience built around
+            Kulzzy Radio, with our own branded player and
+            independently managed broadcasting platform.
+        </p>
+    </div>
+
+</main>
+
+<footer>
+    <strong>KULZZY RADIO</strong><br>
+    CELEBRATING LIVES EVERYDAY<br>
+    STAY TUNED IN
+</footer>
+
+<script>
+
+/*
+========================================
+KULZZY RADIO STREAM CONFIGURATION
+========================================
+
+The stream URL will be added when the
+separate streaming engine is ready.
+
+Do not put a website homepage here.
+This must be a compatible audio stream URL.
+*/
+
+const STREAM_URL = "";
+
+const audio = document.getElementById("radioAudio");
+const listenButton = document.getElementById("listenButton");
+const volumeControl = document.getElementById("volumeControl");
+const statusBox = document.getElementById("connectionStatus");
+const playerMessage = document.getElementById("playerMessage");
+
+audio.volume = 0.85;
+
+volumeControl.addEventListener("input", function(){
+    audio.volume = Number(this.value) / 100;
+});
+
+if(STREAM_URL.trim() !== ""){
+
+    audio.src = STREAM_URL;
+
+    listenButton.disabled = false;
+
+    playerMessage.textContent =
+        "Your radio stream is ready. Press LISTEN NOW to begin.";
+
+}else{
+
+    listenButton.disabled = true;
+
+}
+
+listenButton.addEventListener("click", async function(){
+
+    if(!STREAM_URL){
+        return;
+    }
+
+    if(audio.paused){
+
+        try{
+
+            await audio.play();
+
+            listenButton.textContent = "PAUSE LISTENING";
+
+            statusBox.classList.add("connected");
+
+            statusBox.innerHTML =
+                '<span class="dot"></span> CONNECTED';
+
+            playerMessage.textContent =
+                "You are now listening to Kulzzy Radio.";
+
+        }catch(error){
+
+            playerMessage.textContent =
+                "Unable to connect. Please try again.";
+
+        }
+
+    }else{
+
+        audio.pause();
+
+        listenButton.textContent = "LISTEN NOW";
+
+    }
+
+});
+
+audio.addEventListener("waiting", function(){
+
+    playerMessage.textContent = "Connecting to the radio stream...";
+
+});
+
+audio.addEventListener("error", function(){
+
+    statusBox.classList.remove("connected");
+
+    statusBox.innerHTML =
+        '<span class="dot"></span> CONNECTION ERROR';
+
+    playerMessage.textContent =
+        "The radio stream is currently unavailable.";
+
+    listenButton.textContent = "LISTEN NOW";
+
+});
+
+audio.addEventListener("ended", function(){
+
+    listenButton.textContent = "LISTEN NOW";
+
+});
+
+</script>
+
+</body>
+</html>
