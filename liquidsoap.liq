@@ -21,7 +21,7 @@ radio = fallback(
 # SEND AUDIO TO ICECAST
 output.icecast(
     %mp3(bitrate=128, stereo=true),
-    host="127.0.0.1",
+    host="kulzzy-radio-server",
     port=8000,
     password="CHANGE_THIS_SOURCE_PASSWORD",
     mount="/kulzzy.mp3",
