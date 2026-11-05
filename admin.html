@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07152f">
+<title>Kulzzy Radio Admin</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+    background:#07152f;
+    color:white;
+    font-family:Arial,sans-serif;
+}
+header{
+    padding:24px 15px;
+    text-align:center;
+    border-bottom:1px solid #263653;
+}
+header h1{color:#ffd700;font-size:23px}
+header p{font-size:11px;margin-top:7px;letter-spacing:2px}
+main{max-width:600px;margin:25px auto;padding:15px}
+.card{
+    background:#101f3c;
+    border:1px solid #263653;
+    border-radius:15px;
+    padding:22px;
+    margin-bottom:18px;
+}
+h2{font-size:17px;color:#ffd700;margin-bottom:20px}
+label{
+    display:block;
+    font-size:13px;
+    margin:17px 0 8px;
+}
+input{
+    width:100%;
+    padding:14px;
+    border:1px solid #344767;
+    border-radius:9px;
+    background:#07152f;
+    color:white;
+    outline:none;
+    font-size:14px;
+}
+input:focus{border-color:#ffd700}
+button{
+    width:100%;
+    padding:15px;
+    border:0;
+    border-radius:10px;
+    margin-top:14px;
+    font-weight:bold;
+    font-size:14px;
+    cursor:pointer;
+}
+.save{background:#ffd700;color:#07152f}
+.clear{background:#263653;color:white}
+.status{
+    font-size:13px;
+    color:#ffd700;
+    margin-top:15px;
+    line-height:1.6;
+}
+.note{
+    color:#aebbd0;
+    font-size:12px;
+    line-height:1.7;
+    margin-top:15px;
+}
+footer{
+    text-align:center;
+    padding:25px;
+    font-size:12px;
+    color:#aebbd0;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>KULZZY RADIO</h1>
+    <p>ADMIN CONTROL PANEL</p>
+</header>
+
+<main>
+
+    <div class="card">
+        <h2>STATION SETTINGS</h2>
+
+        <label for="stationName">STATION NAME</label>
+        <input id="stationName" value="KULZZY RADIO">
+
+        <label for="stationTagline">STATION TAGLINE</label>
+        <input id="stationTagline" value="CELEBRATING LIVES EVERYDAY">
+
+        <button class="save" onclick="saveStation()">
+            SAVE STATION SETTINGS
+        </button>
+
+        <div class="status" id="stationStatus"></div>
+    </div>
+
+    <div class="card">
+        <h2>STREAM CONNECTION</h2>
+
+        <label for="streamUrl">AUDIO STREAM URL</label>
+        <input
+            id="streamUrl"
+            type="url"
+            placeholder="https://your-stream-address"
+        >
+
+        <label for="serverType">STREAM FORMAT</label>
+        <input
+            id="serverType"
+            placeholder="MP3 / AAC / OGG"
+        >
+
+        <button class="save" onclick="saveStream()">
+            SAVE STREAM SETTINGS
+        </button>
+
+        <button class="clear" onclick="clearStream()">
+            CLEAR STREAM SETTINGS
+        </button>
+
+        <div class="status" id="streamStatus"></div>
+
+        <p class="note">
+            Stream settings are stored in this browser only.
+            This panel does not start or transmit a live broadcast.
+        </p>
+    </div>
+
+    <div class="card">
+        <h2>BROADCAST STATUS</h2>
+
+        <div class="status" id="broadcastStatus">
+            STREAMING ENGINE NOT CONNECTED
+        </div>
+
+        <p class="note">
+            Live broadcast controls will be connected to the streaming engine in a later stage.
+        </p>
+    </div>
+
+</main>
+
+<footer>
+    KULZZY RADIO · ADMIN
+</footer>
+
+<script>
+const stationName = document.getElementById("stationName");
+const stationTagline = document.getElementById("stationTagline");
+const streamUrl = document.getElementById("streamUrl");
+const serverType = document.getElementById("serverType");
+
+function loadSettings(){
+
+    stationName.value =
+        localStorage.getItem("kulzzy_station_name") || "KULZZY RADIO";
+
+    stationTagline.value =
+        localStorage.getItem("kulzzy_station_tagline") ||
+        "CELEBRATING LIVES EVERYDAY";
+
+    streamUrl.value =
+        localStorage.getItem("kulzzy_stream_url") || "";
+
+    serverType.value =
+        localStorage.getItem("kulzzy_stream_format") || "";
+}
+
+function saveStation(){
+
+    localStorage.setItem(
+        "kulzzy_station_name",
+        stationName.value.trim()
+    );
+
+    localStorage.setItem(
+        "kulzzy_station_tagline",
+        stationTagline.value.trim()
+    );
+
+    document.getElementById("stationStatus").textContent =
+        "Station settings saved in this browser.";
+}
+
+function saveStream(){
+
+    const url = streamUrl.value.trim();
+
+    if(url && !/^https?:\/\//i.test(url)){
+        document.getElementById("streamStatus").textContent =
+            "Enter a valid HTTP or HTTPS stream URL.";
+        return;
+    }
+
+    localStorage.setItem("kulzzy_stream_url",url);
+
+    localStorage.setItem(
+        "kulzzy_stream_format",
+        serverType.value.trim()
+    );
+
+    document.getElementById("streamStatus").textContent =
+        "Stream settings saved in this browser.";
+}
+
+function clearStream(){
+
+    localStorage.removeItem("kulzzy_stream_url");
+    localStorage.removeItem("kulzzy_stream_format");
+
+    streamUrl.value = "";
+    serverType.value = "";
+
+    document.getElementById("streamStatus").textContent =
+        "Stream settings cleared.";
+}
+
+loadSettings();
+</script>
+
+</body>
+</html>
