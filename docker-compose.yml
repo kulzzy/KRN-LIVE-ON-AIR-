@@ -1,17 +1,26 @@
 services:
-  kulzzy-radio-server:
-    build: .
-    container_name: kulzzy-radio
-    restart: unless-stopped
 
+  kulzzy-radio-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kulzzy-radio-server
+    restart: unless-stopped
     ports:
       - "8000:8000"
-
     volumes:
       - icecast-logs:/var/log/icecast2
 
-    environment:
-      TZ: Africa/Lagos
+  kulzzy-audio-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile.liquidsoap
+    container_name: kulzzy-audio-engine
+    restart: unless-stopped
+    depends_on:
+      - kulzzy-radio-server
+    ports:
+      - "8005:8005"
 
 volumes:
   icecast-logs:
