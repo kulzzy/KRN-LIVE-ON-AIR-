@@ -1,0 +1,180 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07152f">
+<title>Kulzzy Radio Live Studio</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#07152f;color:#fff;font-family:Arial,sans-serif;padding:22px}
+main{max-width:520px;margin:25px auto;background:#0d2042;border:1px solid #263d67;border-radius:18px;padding:22px}
+h1{color:#ffd700;text-align:center;font-size:25px;margin:5px 0}
+p{text-align:center;color:#cbd5e1}
+label{display:block;margin:18px 0 7px}
+input,select{width:100%;padding:14px;border-radius:9px;border:1px solid #526581;background:#fff;color:#111;font-size:16px}
+button{width:100%;padding:15px;border:0;border-radius:10px;font-weight:bold;font-size:17px;margin-top:15px}
+#start{background:#ffd700;color:#07152f}
+#stop{background:#d62828;color:white}
+#status{text-align:center;padding:14px;border-radius:9px;background:#07152f;margin-top:18px;color:#ffd700}
+small{display:block;text-align:center;color:#9fb0ca;margin-top:16px}
+</style>
+</head>
+<body>
+<main>
+<h1>KULZZY RADIO</h1>
+<p>LIVE BROADCAST STUDIO</p><label for="password">Studio Password</label>
+<input id="password" type="password" autocomplete="current-password" placeholder="Enter studio password">
+
+<label for="mic">Microphone</label>
+<select id="mic">
+
+<option value="">Default microphone</option>
+</select><button id="start">🔴 START LIVE</button>
+<button id="stop" disabled>■ STOP LIVE</button>
+
+<div id="status">Ready to connect</div>
+<small>Keep this page open while broadcasting.</small>
+</main><script>
+const $ = id => document.getElementById(id);
+let stream = null;
+let recorder = null;
+let ws = null;
+
+function status(message) {
+  $("status").textContent = message;
+}
+
+async function loadMics() {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const microphones = devices.filter(d => d.kind === "audioinput");
+
+    $("mic").innerHTML =
+      '<option value="">Default microphone</option>' +
+      microphones.map((d, i) =>
+        '<option value="' + d.deviceId + '">' +
+        (d.label || ("Microphone " + (i + 1))) +
+        '</option>'
+      ).join("");
+  } catch (error) {}
+}
+
+async function startLive() {
+  if (!navigator.mediaDevices || !window.MediaRecorder) {
+    status("Your browser does not support live audio.");
+    return;
+  }
+
+  const password = $("password").value.trim();
+
+  if (!password) {
+    status("Enter your studio password.");
+    return;
+  }
+
+  try {
+    status("Requesting microphone access...");
+
+    const device = $("mic").value;
+
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: device
+        ? {deviceId: {exact: device}, echoCancellation: true, noiseSuppression: true}
+        : {echoCancellation: true, noiseSuppression: true}
+    });
+
+    const protocol = location.protocol === "https:" ? "wss:" : "ws:";
+
+    ws = new WebSocket(
+      protocol + "//" + location.host +
+      "/broadcast?password=" + encodeURIComponent(password)
+    );
+
+    ws.binaryType = "arraybuffer";
+
+    ws.onopen = () => {
+      const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : "audio/webm";
+
+      recorder = new MediaRecorder(stream, {
+        mimeType: mime,
+        audioBitsPerSecond: 128000
+      });
+
+      recorder.ondataavailable = event => {
+        if (event.data.size && ws && ws.readyState === WebSocket.OPEN) {
+          event.data.arrayBuffer().then(buffer => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              ws.send(buffer);
+            }
+          });
+        }
+      };
+
+      recorder.start(250);
+
+      $("start").disabled = true;
+      $("stop").disabled = false;
+      status("🔴 YOU ARE LIVE — KULZZY RADIO");
+    };
+
+    ws.onmessage = event => {
+      try {
+        const message = JSON.parse(event.data);
+        if (message.type === "error") status(message.message);
+      } catch (error) {}
+    };
+
+    ws.onclose = event => {
+      if (recorder && recorder.state !== "inactive") recorder.stop();
+
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+
+      $("start").disabled = false;
+      $("stop").disabled = true;
+
+      status(event.code === 1008
+        ? "Incorrect studio password."
+        : "Studio disconnected.");
+    };
+
+    ws.onerror = () => status("Connection error. Please try again.");
+
+  } catch (error) {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      stream = null;
+    }
+
+    status("Microphone access failed: " + error.message);
+  }
+}
+
+function stopLive() {
+  if (recorder && recorder.state !== "inactive") recorder.stop();
+
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+    stream = null;
+  }
+
+  if (ws && ws.readyState === WebSocket.OPEN) ws.close();
+
+  $("start").disabled = false;
+  $("stop").disabled = true;
+  status("Broadcast stopped.");
+}
+
+$("start").addEventListener("click", startLive);
+$("stop").addEventListener("click", stopLive);
+
+if (navigator.mediaDevices) {
+  navigator.mediaDevices.addEventListener("devicechange", loadMics);
+  loadMics();
+}
+</script></body>
+</html>
