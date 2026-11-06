@@ -2,13 +2,26 @@ FROM debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends icecast2 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends 
+nodejs 
+npm 
+ffmpeg 
+icecast2 
+ca-certificates 
+&& apt-get clean 
+&& rm -rf /var/lib/apt/lists/*
 
+WORKDIR /app
+
+COPY live-engine/package.json /app/live-engine/package.json
+RUN cd /app/live-engine && npm install --omit=dev
+
+COPY live-engine/ /app/live-engine/
 COPY icecast.xml /etc/icecast2/icecast.xml
+COPY entrypoint.sh /app/entrypoint.sh
 
-EXPOSE 8000
+RUN chmod +x /app/entrypoint.sh
 
-CMD ["icecast2", "-c", "/etc/icecast2/icecast.xml"]
+EXPOSE 3000
+
+CMD ["/app/entrypoint.sh"]
