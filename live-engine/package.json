@@ -1,0 +1,12 @@
+{
+"name": "kulzzy-live-studio",
+"version": "1.0.0",
+"private": true,
+"main": "Server.js",
+"scripts": {
+"start": "node Server.js"
+},
+"dependencies": {
+"ws": "^8.18.0"
+}
+}
