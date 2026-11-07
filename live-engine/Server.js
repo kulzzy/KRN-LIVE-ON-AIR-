@@ -13,23 +13,35 @@ let activeSocket = null;
 
 const server = http.createServer((req, res) => {
 
-    // FIX: Ignore query strings when checking the requested page.
-    const requestPath = new URL(req.url, "http://localhost").pathname;
+    const requestPath = new URL(
+        req.url,
+        "http://localhost"
+    ).pathname;
 
+    // STUDIO PAGE
     if (requestPath === "/" || requestPath === "/studio") {
+
+        const studioFile = path.join(__dirname, "Studio.html");
+
+        if (!fs.existsSync(studioFile)) {
+            res.writeHead(404);
+            return res.end("Studio page not found");
+        }
+
         res.writeHead(200, {
             "Content-Type": "text/html; charset=utf-8",
             "Cache-Control": "no-store"
         });
 
-        return fs.createReadStream(
-            path.join(__dirname, "Studio.html")
-        ).pipe(res);
+        return fs.createReadStream(studioFile).pipe(res);
     }
 
+    // HEALTH CHECK
     if (requestPath === "/health") {
+
         res.writeHead(200, {
-            "Content-Type": "text/plain"
+            "Content-Type": "text/plain",
+            "Cache-Control": "no-store"
         });
 
         return res.end("Kulzzy Live is running");
@@ -45,7 +57,11 @@ const server = http.createServer((req, res) => {
             hostname: "127.0.0.1",
             port: 8000,
             path: "/kulzzy.mp3",
-            method: "GET"
+            method: "GET",
+            headers: {
+                "User-Agent": "Kulzzy-Radio-Player",
+                "Accept": "*/*"
+            }
         }, upstreamResponse => {
 
             res.writeHead(
@@ -54,20 +70,44 @@ const server = http.createServer((req, res) => {
             );
 
             upstreamResponse.pipe(res);
+
+            upstreamResponse.on("error", () => {
+                if (!res.destroyed) {
+                    res.destroy();
+                }
+            });
+
         });
 
-        upstream.on("error", () => {
+        upstream.on("error", error => {
+
+            console.error(
+                "Icecast connection error:",
+                error.message
+            );
 
             if (!res.headersSent) {
                 res.writeHead(503, {
-                    "Content-Type": "text/plain"
+                    "Content-Type": "text/plain",
+                    "Cache-Control": "no-store"
                 });
+
+                res.end("Kulzzy Radio is currently offline.");
+            } else if (!res.destroyed) {
+                res.destroy();
             }
 
-            res.end("Kulzzy Radio is currently offline.");
         });
 
-        req.on("close", () => upstream.destroy());
+        // IMPORTANT:
+        // Only terminate Icecast when the LISTENER disconnects.
+        res.on("close", () => {
+
+            if (!res.writableEnded) {
+                upstream.destroy();
+            }
+
+        });
 
         upstream.end();
 
@@ -80,13 +120,14 @@ const server = http.createServer((req, res) => {
 });
 
 
-// WEB SOCKET BROADCAST CONNECTION
+// WEBSOCKET BROADCAST SERVER
 const wss = new WebSocket.Server({
     noServer: true,
     maxPayload: 2 * 1024 * 1024
 });
 
 
+// WEBSOCKET UPGRADE
 server.on("upgrade", (req, socket, head) => {
 
     const url = new URL(req.url, "http://localhost");
@@ -103,6 +144,7 @@ server.on("upgrade", (req, socket, head) => {
 });
 
 
+// BROADCAST CONNECTION
 wss.on("connection", (ws, req, url) => {
 
     const suppliedPassword =
@@ -136,7 +178,7 @@ wss.on("connection", (ws, req, url) => {
         encodeURIComponent(SOURCE_PASSWORD) +
         "@127.0.0.1:8000/kulzzy.mp3";
 
-    ffmpeg = spawn("ffmpeg", [
+    const encoder = spawn("ffmpeg", [
         "-hide_banner",
         "-loglevel", "error",
         "-f", "webm",
@@ -152,15 +194,20 @@ wss.on("connection", (ws, req, url) => {
         stdio: ["pipe", "ignore", "pipe"]
     });
 
+    ffmpeg = encoder;
 
-    ffmpeg.stderr.on("data", data => {
+    let stopped = false;
+
+    encoder.stderr.on("data", data => {
         console.error("FFmpeg:", data.toString());
     });
 
+    encoder.on("error", error => {
 
-    ffmpeg.on("error", error => {
-
-        console.error("FFmpeg error:", error.message);
+        console.error(
+            "FFmpeg error:",
+            error.message
+        );
 
         if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({
@@ -172,62 +219,56 @@ wss.on("connection", (ws, req, url) => {
         ws.close();
     });
 
+    encoder.on("close", (code) => {
 
-    ffmpeg.on("close", () => {
+        console.log("FFmpeg stopped:", code);
+
+        if (ffmpeg === encoder) {
+            ffmpeg = null;
+        }
 
         if (activeSocket === ws) {
             activeSocket = null;
         }
 
-        ffmpeg = null;
     });
-
 
     ws.send(JSON.stringify({
         type: "connected"
     }));
 
-
     ws.on("message", (data, isBinary) => {
 
         if (
             isBinary &&
-            ffmpeg &&
-            ffmpeg.stdin.writable
+            !stopped &&
+            encoder.stdin.writable &&
+            !encoder.stdin.destroyed
         ) {
-            ffmpeg.stdin.write(data);
+            encoder.stdin.write(data);
         }
 
     });
 
-
     const stopBroadcast = () => {
 
-        if (ffmpeg) {
+        if (stopped) return;
 
-            const process = ffmpeg;
-            ffmpeg = null;
+        stopped = true;
 
-            try {
-                process.stdin.end();
-            } catch (error) {}
-
-            setTimeout(() => {
-
-                if (!process.killed) {
-                    process.kill("SIGTERM");
-                }
-
-            }, 3000).unref();
-
+        if (encoder.stdin.writable) {
+            encoder.stdin.end();
         }
 
-        if (activeSocket === ws) {
-            activeSocket = null;
-        }
+        setTimeout(() => {
+
+            if (!encoder.killed && encoder.exitCode === null) {
+                encoder.kill("SIGTERM");
+            }
+
+        }, 3000).unref();
 
     };
-
 
     ws.on("close", stopBroadcast);
     ws.on("error", stopBroadcast);
@@ -235,6 +276,7 @@ wss.on("connection", (ws, req, url) => {
 });
 
 
+// START SERVER
 server.listen(PORT, "0.0.0.0", () => {
 
     console.log(
