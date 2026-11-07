@@ -1,50 +1,54 @@
-<limits>
-    <clients>1000</clients>
-    <sources>5</sources>
-    <threadpool>10</threadpool>
-    <queue-size>1048576</queue-size>
-    <client-timeout>60</client-timeout>
-    <header-timeout>30</header-timeout>
-    <source-timeout>600</source-timeout>
-    <burst-on-connect>1</burst-on-connect>
-    <burst-size>131072</burst-size>
-</limits>
+<icecast>
+    <location>Nigeria</location>
+    <admin>admin@kulzzyradio.com</admin>
 
-<authentication>
-    <source-password>CHANGE_THIS_SOURCE_PASSWORD</source-password>
-    <relay-password>CHANGE_THIS_RELAY_PASSWORD</relay-password>
-    <admin-user>admin</admin-user>
-    <admin-password>CHANGE_THIS_ADMIN_PASSWORD</admin-password>
-</authentication>
+    <limits>
+        <clients>1000</clients>
+        <sources>5</sources>
+        <threadpool>10</threadpool>
+        <queue-size>1048576</queue-size>
+        <client-timeout>60</client-timeout>
+        <header-timeout>30</header-timeout>
+        <source-timeout>600</source-timeout>
+        <burst-on-connect>1</burst-on-connect>
+        <burst-size>131072</burst-size>
+    </limits>
 
-<hostname>localhost</hostname>
+    <authentication>
+        <source-password>CHANGE_THIS_SOURCE_PASSWORD</source-password>
+        <relay-password>CHANGE_THIS_RELAY_PASSWORD</relay-password>
+        <admin-user>admin</admin-user>
+        <admin-password>CHANGE_THIS_ADMIN_PASSWORD</admin-password>
+    </authentication>
 
-<listen-socket>
-    <port>8000</port>
-    <bind-address>0.0.0.0</bind-address>
-</listen-socket>
+    <hostname>localhost</hostname>
 
-<fileserve>1</fileserve>
+    <listen-socket>
+        <port>8000</port>
+        <bind-address>0.0.0.0</bind-address>
+    </listen-socket>
 
-<paths>
-    <basedir>/usr/share/icecast2</basedir>
-    <logdir>/var/log/icecast2</logdir>
-    <webroot>/usr/share/icecast2/web</webroot>
-    <adminroot>/usr/share/icecast2/admin</adminroot>
-</paths>
+    <fileserve>1</fileserve>
 
-<logging>
-    <accesslog>access.log</accesslog>
-    <errorlog>error.log</errorlog>
-    <loglevel>3</loglevel>
-</logging>
+    <paths>
+        <basedir>/usr/share/icecast2</basedir>
+        <logdir>/var/log/icecast2</logdir>
+        <webroot>/usr/share/icecast2/web</webroot>
+        <adminroot>/usr/share/icecast2/admin</adminroot>
+    </paths>
 
-<security>
-    <chroot>0</chroot>
-    <changeowner>
-        <user>icecast2</user>
-        <group>icecast</group>
-    </changeowner>
-</security>
+    <logging>
+        <accesslog>access.log</accesslog>
+        <errorlog>error.log</errorlog>
+        <loglevel>3</loglevel>
+    </logging>
+
+    <security>
+        <chroot>0</chroot>
+        <changeowner>
+            <user>icecast2</user>
+            <group>icecast</group>
+        </changeowner>
+    </security>
 
 </icecast>
