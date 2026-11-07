@@ -1,15 +1,13 @@
-<icecast>
-    <location>Nigeria</location>
-    <admin>admin@kulzzyradio.com</admin><limits>
+<limits>
     <clients>1000</clients>
     <sources>5</sources>
-    <threadpool>5</threadpool>
-    <queue-size>524288</queue-size>
-    <client-timeout>30</client-timeout>
-    <header-timeout>15</header-timeout>
-    <source-timeout>10</source-timeout>
+    <threadpool>10</threadpool>
+    <queue-size>1048576</queue-size>
+    <client-timeout>60</client-timeout>
+    <header-timeout>30</header-timeout>
+    <source-timeout>600</source-timeout>
     <burst-on-connect>1</burst-on-connect>
-    <burst-size>65535</burst-size>
+    <burst-size>131072</burst-size>
 </limits>
 
 <authentication>
