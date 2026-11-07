@@ -1,0 +1,20 @@
+{
+  "id": "/studio",
+  "name": "Kulzzy Radio Live Broadcast Studio",
+  "short_name": "Kulzzy Studio",
+  "description": "Official Kulzzy Radio live broadcasting studio.",
+  "start_url": "/studio",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07152f",
+  "theme_color": "#07152f",
+  "icons": [
+    {
+      "src": "/icons/kulzzy-radio.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
