@@ -113,7 +113,42 @@ const server = http.createServer((req, res) => {
 
         return;
     }
+// KULZZY RADIO PWA FILES
+const pwaFiles = {
+  "/manifest.webmanifest": {
+    file: path.join(__dirname, "manifest.webmanifest"),
+    type: "application/manifest+json"
+  },
+  "/service-worker.js": {
+    file: path.join(__dirname, "service-worker.js"),
+    type: "application/javascript"
+  },
+  "/icons/kulzzy-radio.svg": {
+    file: path.join(__dirname, "icons", "kulzzy-radio.svg"),
+    type: "image/svg+xml"
+  }
+};
 
+const pwaFile = pwaFiles[req.url.split("?")[0]];
+
+if (pwaFile) {
+  fs.readFile(pwaFile.file, (error, data) => {
+    if (error) {
+      res.writeHead(404);
+      return res.end("File not found");
+    }
+
+    res.writeHead(200, {
+      "Content-Type": pwaFile.type,
+      "Cache-Control": "no-cache",
+      "Service-Worker-Allowed": "/"
+    });
+
+    res.end(data);
+  });
+
+  return;
+}
     res.writeHead(404);
     res.end("Not found");
 
