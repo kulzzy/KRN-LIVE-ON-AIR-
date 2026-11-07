@@ -1,308 +1,97 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#07152f">
+    ws.onerror = () => {
+      status("Connection error. Please try again.");
+    };
 
-<link rel="manifest" href="/manifest.webmanifest">
-<link rel="icon" href="/icons/kulzzy-radio.svg">
+  } catch (error) {
 
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Kulzzy Studio">
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      stream = null;
+    }
 
-<title>Kulzzy Radio Live Studio</title>
+    status("Microphone access failed: " + error.message);
 
-<style>
-*{box-sizing:border-box}
-
-body{
-  margin:0;
-  background:#07152f;
-  color:#fff;
-  font-family:Arial,sans-serif;
-  padding:22px
-}
-
-main{
-  max-width:520px;
-  margin:25px auto;
-  background:#0d2042;
-  border:1px solid #263d67;
-  border-radius:18px;
-  padding:22px
-}
-
-h1{
-  color:#ffd700;
-  text-align:center;
-  font-size:25px;
-  margin:5px 0
-}
-
-p{
-  text-align:center;
-  color:#cbd5e1
-}
-
-label{
-  display:block;
-  margin:18px 0 7px
-}
-
-input,select{
-  width:100%;
-  padding:14px;
-  border-radius:9px;
-  border:1px solid #526581;
-  background:#fff;
-  color:#111;
-  font-size:16px
-}
-
-button{
-  width:100%;
-  padding:15px;
-  border:0;
-  border-radius:10px;
-  font-weight:bold;
-  font-size:17px;
-  margin-top:15px
-}
-
-#start{
-  background:#ffd700;
-  color:#07152f
-}
-
-#stop{
-  background:#d62828;
-  color:white
-}
-
-#status{
-  text-align:center;
-  padding:14px;
-  border-radius:9px;
-  background:#07152f;
-  margin-top:18px;
-  color:#ffd700
-}
-
-small{
-  display:block;
-  text-align:center;
-  color:#9fb0ca;
-  margin-top:16px
-}
-
-#installStudio{
-  display:none;
-  background:#ffd700;
-  color:#07152f;
-  width:100%;
-  padding:16px;
-  margin:15px 0;
-  border:0;
-  border-radius:12px;
-  font-size:16px;
-  font-weight:bold
-}
-</style>
-</head>
-
-<body>
-
-<main>
-
-<h1>KULZZY RADIO</h1>
-
-<p>LIVE BROADCAST STUDIO</p>
-
-<!-- ANDROID INSTALL BUTTON -->
-<button id="installStudio">
-  📲 INSTALL KULZZY RADIO STUDIO
-</button>
-
-<label for="password">Studio Password</label>
-
-<input
-  id="password"
-  type="password"
-  autocomplete="current-password"
-  placeholder="Enter studio password"
->
-
-<label for="mic">Microphone</label>
-
-<select id="mic">
-  <option value="">Default microphone</option>
-</select>
-
-<button id="start">🔴 START LIVE</button>
-
-<button id="stop" disabled>■ STOP LIVE</button>
-
-<div id="status">Ready to connect</div>
-
-<small>Keep this page open while broadcasting.</small>
-
-</main>
-
-<script>
-
-const $ = id => document.getElementById(id);
-
-let stream = null;
-let recorder = null;
-let ws = null;
-
-function status(message) {
-  $("status").textContent = message;
-}
-
-async function loadMics() {
-  try {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-
-    const microphones = devices.filter(
-      d => d.kind === "audioinput"
-    );
-
-    $("mic").innerHTML =
-      '<option value="">Default microphone</option>' +
-      microphones.map((d, i) =>
-        '<option value="' + d.deviceId + '">' +
-        (d.label || ("Microphone " + (i + 1))) +
-        '</option>'
-      ).join("");
-
-  } catch (error) {}
-}
-
-async function startLive() {
-
-  if (!navigator.mediaDevices || !window.MediaRecorder) {
-    status("Your browser does not support live audio.");
-    return;
   }
 
-  const password = $("password").value.trim();
+}
 
-  if (!password) {
-    status("Enter your studio password.");
-    return;
+function stopLive() {
+
+  if (recorder && recorder.state !== "inactive") {
+    recorder.stop();
   }
 
-  try {
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+    stream = null;
+  }
 
-    status("Requesting microphone access...");
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.close();
+  }
 
-    const device = $("mic").value;
+  $("start").disabled = false;
+  $("stop").disabled = true;
 
-    stream = await navigator.mediaDevices.getUserMedia({
-      audio: device
-        ? {
-            deviceId: {exact: device},
-            echoCancellation: true,
-            noiseSuppression: true
-          }
-        : {
-            echoCancellation: true,
-            noiseSuppression: true
-          }
-    });
+  status("Broadcast stopped.");
 
-    const protocol =
-      location.protocol === "https:" ? "wss:" : "ws:";
+}
 
-    ws = new WebSocket(
-      protocol + "//" + location.host +
-      "/broadcast?password=" + encodeURIComponent(password)
-    );
+$("start").addEventListener("click", startLive);
+$("stop").addEventListener("click", stopLive);
 
-    ws.binaryType = "arraybuffer";
+if (navigator.mediaDevices) {
+  navigator.mediaDevices.addEventListener("devicechange", loadMics);
+  loadMics();
+}
 
-    ws.onopen = () => {
 
-      const mime =
-        MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-          ? "audio/webm;codecs=opus"
-          : "audio/webm";
+/* ANDROID APP INSTALLATION */
 
-      recorder = new MediaRecorder(stream, {
-        mimeType: mime,
-        audioBitsPerSecond: 128000
+let installPrompt = null;
+
+const installButton = $("installStudio");
+
+window.addEventListener("beforeinstallprompt", event => {
+  event.preventDefault();
+  installPrompt = event;
+  installButton.style.display = "block";
+});
+
+installButton.addEventListener("click", async () => {
+
+  if (!installPrompt) return;
+
+  installPrompt.prompt();
+
+  await installPrompt.userChoice;
+
+  installPrompt = null;
+  installButton.style.display = "none";
+
+});
+
+window.addEventListener("appinstalled", () => {
+  installButton.style.display = "none";
+});
+
+
+/* SERVICE WORKER REGISTRATION */
+
+if ("serviceWorker" in navigator) {
+
+  window.addEventListener("load", () => {
+
+    navigator.serviceWorker.register("/service-worker.js")
+      .catch(error => {
+        console.error("PWA registration failed:", error);
       });
 
-      recorder.ondataavailable = event => {
+  });
 
-        if (
-          event.data.size &&
-          ws &&
-          ws.readyState === WebSocket.OPEN
-        ) {
+}
 
-          event.data.arrayBuffer().then(buffer => {
+</script>
 
-            if (ws && ws.readyState === WebSocket.OPEN) {
-              ws.send(buffer);
-            }
-
-          });
-
-        }
-
-      };
-
-      recorder.start(250);
-
-      $("start").disabled = true;
-      $("stop").disabled = false;
-
-      status("🔴 YOU ARE LIVE — KULZZY RADIO");
-
-    };
-
-    ws.onmessage = event => {
-
-      try {
-
-        const message = JSON.parse(event.data);
-
-        if (message.type === "error") {
-          status(message.message);
-        }
-
-      } catch (error) {}
-
-    };
-
-    ws.onclose = event => {
-
-      if (recorder && recorder.state !== "inactive") {
-        recorder.stop();
-      }
-
-      if (stream) {
-
-        stream.getTracks().forEach(track => track.stop());
-
-        stream = null;
-
-      }
-
-      $("start").disabled = false;
-      $("stop").disabled = true;
-
-      status(
-        event.code === 1008
-          ? "Incorrect studio password."
-          : "Studio disconnected."
-      );
-
-    };
-
-    ws.onerror = () => {
-      status("Connection error. Please try
+</body>
+</html>
